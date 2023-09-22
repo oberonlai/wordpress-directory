@@ -19,10 +19,12 @@ export default function Command() {
       isLoading={isLoading}
       onSearchTextChange={setSearchText}
       searchBarPlaceholder="Search WordPress plugins..."
+	  {...(searchText.length > 0 ? {isShowingDetail: true} : {})}
+
       throttle
     >
       {searchText.length > 0 ? (
-        <List.Section title="Results" subtitle={data?.length + ""}>
+        <List.Section  title="Results" subtitle={data?.length + ""}>
            {data?.map((searchResult: SearchResult) => (
              <SearchListItem key={searchResult.name} searchResult={searchResult} />
            ))}
@@ -47,9 +49,15 @@ async function parseFetchResponse(response) {
   const plugins = responseData.plugins || [];
   const parsedData = plugins.map((plugin) => ({
     name: plugin.name.replace(/&#8211;/g, "-"),
-    description: plugin.short_description,
+    description: plugin.description.replace(/<[^>]+>/g, '\n'),
 	url: `https://wordpress.org/plugins/${plugin.slug}/`,
-	icon: plugin.icons['1x']
+	icon: plugin.icons['1x'],
+	download: plugin.download_link,
+	version: plugin.version,
+	rating: Math.ceil((plugin.ratings['1']/plugin.num_ratings)*100),
+	solved: Math.ceil((plugin.support_threads_resolved/plugin.support_threads)*100),
+	downloaded: plugin.downloaded.toLocaleString(),
+	update:plugin.last_updated
   } as SearchResult));
   return parsedData;
 }
@@ -57,22 +65,22 @@ async function parseFetchResponse(response) {
 function defaultLinks() {
   return [
     {
-      name: "Plugins Directory",
+      name: "Go to Plugins Directory",
       description: "Looking for plugins for the WordPress?",
       url: "https://wordpress.org/plugins/",
-	  icon:'abc',
+	  icon:Icon.Hammer,
     } as SearchResult,
     {
-      name: "Themes Directory",
+      name: "Go to Themes Directory",
       description: "Looking for themes for the WordPress?",
       url: "https://wordpress.org/themes/",
-	  icon:'abc',
+	  icon:Icon.Brush,
     } as SearchResult,
 	{
-		name: "Patterns Directory",
+		name: "Go to Patterns Directory",
 		description: "Looking for patterns for the WordPress?",
 		url: "https://wordpress.org/patterns/",
-		icon:'abc',
+		icon:Icon.PlusTopRightSquare,
 	  } as SearchResult,
   ];
 }
@@ -81,7 +89,6 @@ function SearchListItem({ searchResult }: { searchResult: SearchResult }) {
   return (
     <List.Item
       title={searchResult?.name}
-      subtitle={searchResult?.description}
 	  icon={searchResult?.icon}
       actions={
         <ActionPanel>
@@ -98,6 +105,25 @@ function SearchListItem({ searchResult }: { searchResult: SearchResult }) {
           </ActionPanel.Section>
         </ActionPanel>
       }
+	  detail={
+		<List.Item.Detail
+		  markdown={searchResult?.description}
+		  metadata={
+			<List.Item.Detail.Metadata>
+				<List.Item.Detail.Metadata.Link
+			    title="Download Zip"
+			    target={searchResult?.download || '#'}
+			    text="Download from WordPress.org"
+			  />
+				<List.Item.Detail.Metadata.Label title="Version" text={searchResult?.version} />
+			  <List.Item.Detail.Metadata.Label title="1 Star ratio" text={searchResult?.rating+'%' || 'loading...'} />
+			  <List.Item.Detail.Metadata.Label title="Problem-solving ratio" text={searchResult?.solved+'%' || 'loading...'} />
+			  <List.Item.Detail.Metadata.Label title="Downloaded" text={searchResult?.downloaded || 'loading...'} />
+			  <List.Item.Detail.Metadata.Label title="Last Updated" text={searchResult?.update || 'loading...'} />
+			</List.Item.Detail.Metadata>
+		  }
+		/>
+	  }
     />
   );
 }
@@ -156,4 +182,10 @@ interface SearchResult {
   type: string;
   url: string;
   icon: string;
+  download: string;
+  version: string;
+  rating: number;
+  solved: number;
+  downloaded: string;
+  update: string;
 }

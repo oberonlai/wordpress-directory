@@ -5,10 +5,14 @@ import { ActionPanel, Action, List, Icon, environment, AI, Detail } from "@rayca
 export default function Command() {
   const [searchText, setSearchText] = useState("");
 
-  const { data, isLoading } = useFetch(`https://api.wordpress.org/plugins/info/1.2/?action=query_plugins&request[search]=${searchText}`, {
+  const { data, isLoading } = useFetch(`https://api.wordpress.org/plugins/info/1.2/?action=query_plugins&request[per_page]=100&request[search]=${searchText}`, {
     execute: searchText.length > 0,
 	parseResponse: parseFetchResponse,
   });
+
+ console.log(data);
+ 
+  
 
   return (
     <List
@@ -45,6 +49,7 @@ async function parseFetchResponse(response) {
     name: plugin.name.replace(/&#8211;/g, "-"),
     description: plugin.short_description,
 	url: `https://wordpress.org/plugins/${plugin.slug}/`,
+	icon: plugin.icons['1x']
   } as SearchResult));
   return parsedData;
 }
@@ -55,47 +60,20 @@ function defaultLinks() {
       name: "Plugins Directory",
       description: "Looking for plugins for the WordPress?",
       url: "https://wordpress.org/plugins/",
+	  icon:'abc',
     } as SearchResult,
     {
       name: "Themes Directory",
       description: "Looking for themes for the WordPress?",
       url: "https://wordpress.org/themes/",
+	  icon:'abc',
     } as SearchResult,
 	{
 		name: "Patterns Directory",
 		description: "Looking for patterns for the WordPress?",
 		url: "https://wordpress.org/patterns/",
+		icon:'abc',
 	  } as SearchResult,
-    //{
-    //  name: "Coding Standards",
-    //  description: "Looking to ensure your code meets the standards?",
-    //  url: "https://developer.wordpress.org/coding-standards/",
-    //} as SearchResult,
-    //{
-    //  name: "Common APIs",
-    //  description: "Interested in interacting with various APIs?",
-    //  url: "https://developer.wordpress.org/apis/",
-    //} as SearchResult,
-    //{
-    //  name: "REST API",
-    //  description: "Getting started on making WordPress applications?",
-    //  url: "https://developer.wordpress.org/rest-api/",
-    //} as SearchResult,
-    //{
-    //  name: "WP CLI",
-    //  description: "Want to accelerate your workflow managing WordPress?",
-    //  url: "https://developer.wordpress.org/cli/commands/",
-    //} as SearchResult,
-    //{
-    //  name: "Plugin Handbook",
-    //  description: "Ready to dive deep into the world of plugin authoring?",
-    //  url: "https://developer.wordpress.org/cli/commands/",
-    //} as SearchResult,
-    //{
-    //  name: "Theme Handbook",
-    //  description: "Want to learn how to start theming WordPress?",
-    //  url: "https://developer.wordpress.org/cli/commands/",
-    //} as SearchResult,
   ];
 }
 
@@ -104,6 +82,7 @@ function SearchListItem({ searchResult }: { searchResult: SearchResult }) {
     <List.Item
       title={searchResult?.name}
       subtitle={searchResult?.description}
+	  icon={searchResult?.icon}
       actions={
         <ActionPanel>
           <ActionPanel.Section>
@@ -176,4 +155,5 @@ interface SearchResult {
   description: string;
   type: string;
   url: string;
+  icon: string;
 }

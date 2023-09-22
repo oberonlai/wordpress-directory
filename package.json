@@ -12,8 +12,8 @@
   "commands": [
     {
       "name": "index",
-      "title": "Search WordPress.org",
-      "subtitle": "Search WordPress plugins.",
+      "title": "Search WordPress Plugins",
+      "subtitle": "wordpress.org",
       "description": "Search WordPress plugins on wordpress.org",
       "mode": "view"
     }
